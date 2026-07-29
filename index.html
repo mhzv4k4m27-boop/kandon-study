@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KANDON 9 ZOOM STUDY ROOM ✍️</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* 헤더 영역 */
+    header {
+      background: #1f1f1f;
+      padding: 12px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+    .room-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2D8CFF;
+    }
+
+    /* 내 닉네임 설정 바 */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #2a2a2a;
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    .user-profile input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      outline: none;
+      width: 100px;
+    }
+    .user-profile button {
+      background: #2D8CFF;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* 3x3 (총 9개) 그리드 */
+    .grid-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 15px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      align-content: center;
+    }
+
+    @media (max-width: 800px) {
+      .grid-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 500px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 비디오/캠 박스 */
+    .cam-box {
+      position: relative;
+      background-color: #1a1a1a;
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      border: 2px dashed #444;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cam-box:hover {
+      border-color: #2D8CFF;
+      background-color: #222;
+    }
+    .cam-box.active {
+      border: 1px solid #333;
+    }
+    .cam-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .empty-slot {
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+      padding: 10px;
+    }
+
+    /* 고정 이름표 */
+    .name-tag {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    /* 동작 선택 모달 팝업 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #222;
+      padding: 25px;
+      border-radius: 15px;
+      max-width: 420px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      text-align: center;
+      border: 1px solid #444;
+    }
+    .modal-content h3 {
+      margin-bottom: 15px;
+      color: #fff;
+    }
+    .select-btn {
+      display: block;
+      width: 100%;
+      padding: 10px 14px;
+      margin: 6px 0;
+      background: #333;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: left;
+      transition: background 0.2s;
+    }
+    .select-btn:hover {
+      background: #2D8CFF;
+      border-color: #2D8CFF;
+    }
+    .close-btn {
+      margin-top: 15px;
+      background: transparent;
+      color: #888;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* 하단 스톱워치 바 */
+    .control-bar {
+      background-color: #1f1f1f;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      border-top: 1px solid #333;
+    }
+    .timer {
+      font-size: 18px;
+      font-weight: bold;
+      background: #000;
+      padding: 6px 14px;
+      border-radius: 6px;
+      color: #00ff88;
+      letter-spacing: 1px;
+    }
+    .btn {
+      background: #2D8CFF;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="room-title">📹 강동이 9인 줌 독서실</div>
+    
+    <div class="user-profile">
+      <span>👤 내 이름:</span>
+      <input type="text" id="my-name-input" value="방장강동이" placeholder="닉네임 입력">
+      <button onclick="saveMyName()">변경</button>
+    </div>
+  </header>
+
+  <main class="grid-container">
+
+    <div class="cam-box" id="box-1" onclick="openModal(1, '강동이')">
+      <div id="slot-1" class="empty-slot">➕ 강동이<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 강동이</div>
+    </div>
+
+    <div class="cam-box" id="box-2" onclick="openModal(2, '여강동')">
+      <div id="slot-2" class="empty-slot">➕ 여강동<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 여강동</div>
+    </div>
+
+    <div class="cam-box" id="box-3" onclick="openModal(3, '동동이')">
+      <div id="slot-3" class="empty-slot">➕ 동동이<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 동동이</div>
+    </div>
+
+    <div class="cam-box" id="box-4" onclick="openModal(4, '교동')">
+      <div id="slot-4" class="empty-slot">➕ 교동<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 교동</div>
+    </div>
+
+    <div class="cam-box" id="box-5" onclick="openModal(5, '칸돈')">
+      <div id="slot-5" class="empty-slot">➕ 칸돈<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 칸돈</div>
+    </div>
+
+    <div class="cam-box" id="box-6" onclick="openModal(6, '우동규동강동')">
+      <div id="slot-6" class="empty-slot">➕ 우동규동강동<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 우동규동강동</div>
+    </div>
+
+    <div class="cam-box" id="box-7" onclick="openModal(7, 'かんどん')">
+      <div id="slot-7" class="empty-slot">➕ かんどん<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 かんどん</div>
+    </div>
+
+    <div class="cam-box" id="box-8" onclick="openModal(8, 'Kandon')">
+      <div id="slot-8" class="empty-slot">➕ Kandon<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 Kandon</div>
+    </div>
+
+    <div class="cam-box" id="box-9" onclick="openModal(9, '우동단')">
+      <div id="slot-9" class="empty-slot">➕ 우동단<br>(동작 선택하기)</div>
+      <div class="name-tag">🔇 우동단</div>
+    </div>
+
+  </main>
+
+  <div class="modal-overlay" id="selection-modal">
+    <div class="modal-content">
+      <h3 id="modal-title">동작 선택하기</h3>
+      
+      <button class="select-btn" onclick="selectKandon('kandon_typing1.mp4')">⌨️ 키보드 타자 1 (kandon_typing1)</button>
+      <button class="select-btn" onclick="selectKandon('kandon_typing2.mp4')">⌨️ 키보드 타자 2 (kandon_typing2)</button>
+
+      <button class="select-btn" onclick="selectKandon('kandon_writing1.mp4')">✏️ 손필기 1 (kandon_writing1)</button>
+      <button class="select-btn" onclick="selectKandon('kandon_writing2.mp4')">✏️ 손필기 2 (kandon_writing2)</button>
+
+      <button class="select-btn" onclick="selectKandon('kandon_ipad.mp4')">📱 아이패드 1 (kandon_ipad)</button>
+      <button class="select-btn" onclick="selectKandon('kandon_ipad2.mp4')">📱 아이패드 2 (kandon_ipad2)</button>
+
+      <button class="select-btn" onclick="selectKandon('kandon_reading.mp4')">📖 책 읽기 (kandon_reading)</button>
+
+      <button class="select-btn" onclick="selectKandon('kandon_solve.mp4')">📚 문제집 풀기 1 (kandon_solve)</button>
+      <button class="select-btn" onclick="selectKandon('kandon_solve1.mp4')">📚 문제집 풀기 2 (kandon_solve1)</button>
+
+      <button class="close-btn" onclick="closeModal()">닫기</button>
+    </div>
+  </div>
+
+  <footer class="control-bar">
+    <div class="timer" id="clock">00:00:00</div>
+    <button class="btn" onclick="toggleTimer()">⏱️ 타이머 시작 / 정지</button>
+    <button class="btn" style="background:#555;" onclick="resetAll()">🔄 화면 초기화</button>
+  </footer>
+
+  <script>
+    let currentSlot = null;
+    let currentName = '';
+
+    // 모달 열기
+    function openModal(slotNumber, nickname) {
+      currentSlot = slotNumber;
+      currentName = nickname;
+      document.getElementById('modal-title').innerText = `[${nickname}] 동작 선택`;
+      document.getElementById('selection-modal').style.display = 'flex';
+    }
+
+    // 모달 닫기
+    function closeModal() {
+      document.getElementById('selection-modal').style.display = 'none';
+    }
+
+    // 비디오 선택 (무한 루프: loop)
+    function selectKandon(videoSrc) {
+      if (!currentSlot) return;
+
+      const boxElement = document.getElementById(`box-${currentSlot}`);
+      boxElement.classList.add('active');
+      
+      // loop 속성이 적용된 비디오 생성
+      boxElement.innerHTML = `
+        <video autoplay loop muted playsinline>
+          <source src="${videoSrc}" type="video/mp4">
+        </video>
+        <div class="name-tag">🔇 ${currentName}</div>
+      `;
+
+      closeModal();
+    }
+
+    // 내 닉네임 변경 기능
+    function saveMyName() {
+      const name = document.getElementById('my-name-input').value;
+      alert(`내 닉네임이 '${name}'(으)로 변경되었습니다.`);
+    }
+
+    // 전체 초기화
+    function resetAll() {
+      const fixedNames = [
+        '강동이', '여강동', '동동이', '교동', '칸돈', 
+        '우동규동강동', 'かんどん', 'Kandon', '우동단'
+      ];
+      
+      for (let i = 1; i <= 9; i++) {
+        const box = document.getElementById(`box-${i}`);
+        box.classList.remove('active');
+        box.innerHTML = `
+          <div id="slot-${i}" class="empty-slot">➕ ${fixedNames[i-1]}<br>(동작 선택하기)</div>
+          <div class="name-tag">🔇 ${fixedNames[i-1]}</div>
+        `;
+      }
+    }
+
+    // 타이머 기능
+    let timerInterval;
+    let seconds = 0;
+    let isRunning = false;
+
+    function toggleTimer() {
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+      } else {
+        isRunning = true;
+        timerInterval = setInterval(() => {
+          seconds++;
+          const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+          const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+          const secs = String(seconds % 60).padStart(2, '0');
+          document.getElementById('clock').innerText = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+      }
+    }
+  </script>
+</body>
+</html>
